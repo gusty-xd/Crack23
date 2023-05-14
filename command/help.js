@@ -34,7 +34,7 @@ ${mundur}
  • Status : ${isCreator ? 'Owner' : isPremium ? 'Premium' : 'Free'}
  • Limit : ${isCreator ? 'Unlimited' : isPremium ? 'Unlimited' : getLimit(sender, limitCount, limit)}
  • Limit Game : ${isCreator ? 'Unlimited' : cekGLimit(sender, gcount, glimit)}
- • Balance : ${toCommas(getBalance(sender, balance))}
+ • Balance : ${getBalance(sender, balance)}
  • Role : ${role}
  
  
@@ -55,16 +55,18 @@ ${mundur}
 
 *CONVERTER/TOOLS*${petik} 
  • ${prefix}sticker
+ • ${prefix}qc
+ • ${prefix}xquote
  • ${prefix}stickerwm
  • ${prefix}smeme
  • ${prefix}toimg
- • ${prefix}tovideo
  • ${prefix}tomp3
  • ${prefix}ttp
  • ${prefix}attp
  • ${prefix}emojimix
  • ${prefix}ai
  • ${prefix}aiimg
+ • ${prefix}aidraw
  • ${prefix}chatgpt
  • ${prefix}nuliskiri
  • ${prefix}nuliskanan
@@ -150,6 +152,7 @@ ${mundur}
  • ${prefix}gitclone${petik}
 
 *GROUP MENU*${petik}
+ • ${prefix}autoaigc
  • ${prefix}afk
  • ${prefix}welcome
  • ${prefix}left
@@ -186,6 +189,16 @@ ${mundur}
  • ${prefix}checksewa${petik}
 
 *GAME MENU*${petik}
+ • ${prefix}tebakgambar
+ • ${prefix}tebakkata
+ • ${prefix}tebakbendera
+ • ${prefix}tebakkalimat
+ • ${prefix}tebaksiapa
+ • ${prefix}tebakkimia
+ • ${prefix}tebaklirik
+ • ${prefix}tebaktebakan
+ • ${prefix}tekateki
+ • ${prefix}susunkata
  • ${prefix}tictactoe
  • ${prefix}delttt
  • ${prefix}casino
@@ -232,6 +245,7 @@ ${mundur}
  • ${prefix}delcmd${petik}
 
 *OWNERS MENU*${petik}
+ • ${prefix}autoaipc
  • ${prefix}autoread
  • ${prefix}autobio
  • ${prefix}antidelete
