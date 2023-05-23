@@ -1,5 +1,5 @@
 {
-    "ownerNumber": ["6285782001205@s.whatsapp.net","6285782001205@s.whatsapp.net"],
+    "ownerNumber": ["6285782001205@s.whatsapp.net","628565337357@s.whatsapp.net"],
     "ownerName": "ᴹᴿ᭄ DRUBOTZ ×፝֟͜×",
     "instagram" : "https://instagram.com/zeeoneofc",
     "gcwa" : "https://instabio.cc/Alphabot",
@@ -9,7 +9,7 @@
     "fotoDonasi": "./qris.jpeg",
     "pathimg": "./Haruka.jpg",
     "BotKey": "Badruganteng",
-    "OpenAIKey": "your openai key",
+    "OpenAIKey": "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",
     "audio_di_bagian_menu": "./menu.mp3",
     "auto_welcomeMsg": true,
     "auto_leaveMsg": true, 
@@ -26,5 +26,9 @@
     "gcount": {
         "prem": 1000,
         "user": 15
-    }
+    },
+    "api": {
+		"rose": "https://api.itsrose.site",
+		"apikey": "40145eb78be64cfb9757e61f"
+	}
 }
