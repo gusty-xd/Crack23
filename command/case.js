@@ -43,6 +43,7 @@ const { JSDOM } = require('jsdom')
 const speed = require('performance-now')
 const { performance } = require('perf_hooks')
 const { sizeFormatter } = require("human-readable");
+const Config = require("../config.json");
 let format = sizeFormatter({
   std: "JEDEC", // 'SI' (default) | 'IEC' | 'JEDEC'
   decimalPlaces: 2,
@@ -52,6 +53,18 @@ let format = sizeFormatter({
 var dbs = []
 global.dbc = dbs
 
+const API = (name, path = "/", query = {}, apikeyqueryname) =>
+	(name in Config.api ? Config.api[name] : name) +
+	path +
+	(query || apikeyqueryname
+		? "?" +
+		  new URLSearchParams(
+				Object.entries({
+					...query,
+					...(apikeyqueryname ? { [apikeyqueryname]: Config.api.apikey } : {}),
+				})
+		  )
+		: "");
 const _prem = require("../lib/premium");
 const _sewa = require("../lib/sewa");
 const { isSetWelcome, addSetWelcome, changeSetWelcome, removeSetWelcome } = require('../lib/setwelcome');
@@ -993,7 +1006,7 @@ sourceUrl: `${setting.instagram}`
 */
 //await haruka.sendMessage(m.chat, buttonMessage, { quoted: fkontak })
 await haruka.sendMessage(m.chat, {image: fs.readFileSync(setting.pathimg), caption: allMenu(role, ucapanWaktu, pushname, mundur, upload, download, ownerName, botName, jam, tanggal, runtime, isCreator, isPremium, m.sender, limitCount, limit, gcount, glimit, balance, prefix)}, {quoted: fkontak})
-haruka.sendMessage(m.chat, {audio: fs.readFileSync(setting.audio_di_bagian_menu), mimetype:'audio/mpeg', ptt: true}, {quoted: m})
+//haruka.sendMessage(m.chat, {audio: fs.readFileSync(setting.audio_di_bagian_menu), mimetype:'audio/mpeg', ptt: true}, {quoted: m})
 
 // haruka.send5ButLoc(m.chat, allMenu(ucapanWaktu, pushname, mundur, upload, download, ownerName, botName, jam, tanggal, runtime, isCreator, isPremium, m.sender, limitCount, limit, gcount, glimit, balance, prefix), `${footxt}`, tod, buttonsDefault, {userJid: m.chat, quoted: m})
            }
@@ -1810,9 +1823,9 @@ let ggnya = await getBuffer (thumbnail)
             if (!args[0].includes('tiktok')) return m.reply(mess.error.Iv)
             reply(mess.wait)
             addCountCmd('#tiktok', m.sender, _cmd)
-            let dltik = await fetchJson(`https://tiktok.zeeoneofc.my.id/api/tiktok?url=${args[0]}`)
+            let dltik = await fetchJson(`https://saipulanuar.ga/api/download/tiktok?url=${text}`)
 		if(!dltik.result) return m.reply(mess.error.api)
-		haruka.sendMessage(m.chat, {video : {url : dltik.result.url[0].url}, mimetype:'video/mp4'}, {quoted:m})
+		haruka.sendMessage(m.chat, {video : {url : dltik.result.video}, mimetype:'video/mp4'}, {quoted:m})
 }
 limitAdd(m.sender, limit)
             break
@@ -1824,12 +1837,31 @@ limitAdd(m.sender, limit)
 		    if (!text.includes('tiktok')) return m.reply(mess.error.Iv)
 		    reply(mess.wait)
 		addCountCmd('#tiktokaudio', m.sender, _cmd)
-		let dltik = await fetchJson(`https://tiktok.zeeoneofc.my.id/api/tiktok?url=${args[0]}`)
+	/*	let dltik = await fetchJson(`https://tiktok.zeeoneofc.my.id/api/tiktok?url=${args[0]}`)
 		if(!dltik.result) return m.reply(mess.error.api)
 		haruka.sendMessage(m.chat, {audio : {url : dltik.result.url[1].url}, mimetype:'audio/mpeg'}, {quoted:m})
-}
+}*/
+const json = await (
+					await fetch(
+						API("rose", "/downloader/tiktok", { url: args[0] }, "apikey")
+					)
+				).json();
+				if (!json.status) {
+					return reply(json.message || "Yah gaggagaal");
+				}
+				await haruka.sendMessage(
+					m.chat,
+					{
+						audio: {
+							url: json.download.music,
+						},
+						mimetype: "audio/mp4",
+					},
+					{ quoted: m }
+				);
 limitAdd(m.sender, limit)
-		    break
+		    break;
+		}
 			case'mediafire': case'mfire': case'mfdl':{
             if (isLimit(m.sender, isPremium, isCreator, limitCount, limit)) return m.reply(`Limit kamu sudah habis silahkan kirim ${prefix} limit untuk mengecek limit`)
             if (!text) return m.reply(`Gunakan dengan cara ${prefix+command} *url*\n\n_Contoh_\n\n${prefix+command} https://www.mediafire.com/file/6tknikx5f3jfsh8/harukabotV16.zip/file`)
