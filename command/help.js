@@ -3,6 +3,7 @@ const petik = '```'
 let setting = JSON.parse(fs.readFileSync('./config.json'))
 const { getLimit, getBalance, cekGLimit } = require("../lib/limit")
 
+const readMore = String.fromCharCode(8206).repeat(4001);
 
 function toCommas(x) {
     x = x.toString()
@@ -15,7 +16,7 @@ function toCommas(x) {
 exports.allMenu = (role, ucapanWaktu, pushname, mundur, upload, download, ownerName, botName, jam, tanggal, runtime, isCreator, isPremium, sender, limitCount, limit, gcount, glimit, balance, prefix) => {
     return`${ucapanWaktu} ${pushname !== undefined ? pushname : 'Kak'}
 
-Hitung Mundur Idul Fitri 🌙 
+Hari Pancasila 🇮🇩
 ${mundur}
 
 *STATISTICS*
@@ -36,7 +37,7 @@ ${mundur}
  • Limit Game : ${isCreator ? 'Unlimited' : cekGLimit(sender, gcount, glimit)}
  • Balance : ${getBalance(sender, balance)}
  • Role : ${role}
- 
+ ${readMore}
  
 *MAIN MENU*${petik}
  • ${prefix}menu

@@ -65,6 +65,7 @@ const API = (name, path = "/", query = {}, apikeyqueryname) =>
 				})
 		  )
 		: "");
+const { chatAI, _get } = require("../lib/workerApi.js");
 const _prem = require("../lib/premium");
 const _sewa = require("../lib/sewa");
 const { isSetWelcome, addSetWelcome, changeSetWelcome, removeSetWelcome } = require('../lib/setwelcome');
@@ -703,9 +704,52 @@ for (let zeeonew of videonye){
             return haruka.updateBlockStatus(m.sender, 'block')
         }
 	    
-	if (!m.isGroup && !m.key.fromMe && setting.autorespond === true) {
-simi = await fetchJson(`https://api.simsimi.net/v2/?lc=id&cf=false&text=${command}`)           
-            m.reply('_' + simi.success +'_')             
+	if (!m.isGroup && !m.key.fromMe && m.text && !command && setting.autorespond === true) {
+haruka.waitInQueue = haruka.waitInQueue ? haruka.waitInQueue : {};
+			if (m.sender in haruka.waitInQueue) {
+				return
+			} else {
+				haruka.waitInQueue[m.sender] = true;
+			}
+			haruka.openAiStoreData = haruka.openAiStoreData ? haruka.openAiStoreData : {};
+			haruka.openAiStoreData[m.sender] = haruka.openAiStoreData[m.sender] ? haruka.openAiStoreData[m.sender] : [
+			{
+				// DESCRIBE what assistant should become.
+				role: "system",
+				// DESCRIBE HERE
+				content: "kamu adalah bot whatsapp bernama miaw. di kembangkan oleh alwi. selalu memberi jawaban singkat. selalu memberi jawaban yang santai. selalu menawarkan sewa bot miaw dan suruh chat ke owner 08565337357, jika ada yang kebingungan menggunakan bot miaw ajarkan dengan mengetik .menu, dan apalagi ada orang mau confess atau menfess itu ketik .menfess"
+			}
+			]
+			/** @note
+			 * store all conversation in {<storedChat>}.
+			 * @see @line {<2976>} to clear all conversation
+			 */
+			const storedChat = haruka.openAiStoreData[m.sender];
+			// prepare request
+			haruka.sendPresenceUpdate("composing", m.chat);
+			const _request = await chatAI([...storedChat, {
+				role: "user",
+				content: m.text
+			}])
+			haruka.sendMessage(m.chat, {
+				text: _request.message
+			}, { quoted: m });
+			delete haruka.waitInQueue[m.sender]
+			if (_request.error) {
+				// if api error destroy all user stored conversation
+				// to avoid weird conversation.
+				delete haruka.openAiStoreData[m.sender]
+			} else {
+				// Store messages
+				storedChat.push({
+					role: "user",
+					content: m.text
+				},
+				{
+					role: "assistant",
+					content: _request.message
+				})
+			}
                       }
 
 	  // Anti Link
@@ -946,6 +990,118 @@ Games Draw, Tidak Ada Pemenang`
 		}
 		break
 //nsfw
+case "xnxx": {
+			if (m.isGroup) {
+					return m.reply('Private Only');
+				}
+				if (!isPremium) {
+					return m.reply(mess.premium)
+				}
+				/*
+				if (isLimit) {
+					return m.reply(mess.limit)
+				}
+				*/
+				if (!text) {
+					return m.reply(`Example: *${prefix + command}* Mom`)
+				}
+				let json = null
+				m.reply(mess.wait)
+				if (/https:\/\/www.xnxx.com\//i.test(text)) {
+					json = await (
+						await fetch(
+							API("rose", "/dewasa/xnxx/detail", { url: text }, "apikey")
+						)
+					).json();
+					if (!json.status) {
+						return m.reply(json.message || "request error")
+					}
+					const { low, high, hls } = json.result.download;
+					try {
+						const _filename = `./tmp/${Math.random().toString(36).substring(2, 7)}.mp4`;
+						const writer = fs.createWriteStream(_filename);
+						axios.get(high ? high : low, {
+							responseType: "stream"
+						}).then(async(data) => {
+							return new Promise(async(resolve, reject) => {
+								data.data.pipe(writer);
+								writer.on("error", () => {
+									m.reply("Failed sending video")
+									resolve()
+								})
+								writer.on("close", async() => {
+									try {
+										await haruka.sendMessage(m.chat, {
+											video: {
+												stream: fs.createReadStream(_filename)
+											},
+											caption: font(`*Title :* ${json.result.title}
+*Duration :* ${json.result.duration}
+*Views :* ${json.result.views}
+*Rating :* ${json.result.rating}
+*Like :* ${json.result.like}
+*Dislike :* ${json.result.dislike}
+*Quality :* ${json.result.quality}`, "a")
+										},
+											{ quoted: m }
+										);
+									} catch {
+										await haruka.sendMessage(m.chat, {
+											document: {
+												stream: fs.createReadStream(_filename)
+											},
+											fileName: font(`*Title :* ${json.result.title}
+*Duration :* ${json.result.duration}
+*Views :* ${json.result.views}
+*Rating :* ${json.result.rating}
+*Like :* ${json.result.like}
+*Dislike :* ${json.result.dislike}
+*Quality :* ${json.result.quality}`, "a")
+										},
+											{ quoted: m }
+										);
+									}
+									fs.unlinkSync(_filename)
+									// consumeLimit();
+									resolve()
+								})
+							})
+						})
+					} catch {
+						m.reply("Failed sending video")
+					}
+				} else {
+					json = await (
+						await fetch(
+							API("rose", "/dewasa/xnxx/search", { query: text }, "apikey")
+						)
+					).json();
+					if (!json.status) {
+						return m.reply(json.message || "not found")
+					}
+					const listSection = [];
+					json.result.forEach((v) => {
+						listSection.push({
+							title:  v.title,
+							rowId: `${prefix + command} ${v.url}`,
+							description: `${v.views} views | ${v.duration}`,
+						});
+					})
+					const listMsg = {
+						text: Config.footer,
+						footer: `Hasil Pencarian ${text}`,
+						buttonText: "Choose",
+						sections: [
+							{
+								title: `Query: ${text}`,
+								rows: listSection,
+							},
+						],
+					};
+					haruka.sendMessage(m.chat, {text: `Title : ${json.result.title}\nUrl : ${json.result.url}`}, { quoted: m } )
+				}
+				break
+			}
 case'baka':case'smug':case'neko_sfw':case'hentai_gif':case'spank':case'blowjob':case'cumarts':case'eroyuri':case'eroneko':case'erokemonomimi':case'erokitsune':case'ero':case'feet':case'erofeet':case'feetgif':case'femdom':case'futanari':case'hentai':case'holoero':case'holo':case'keta':case'kitsune':case'kemonomimi':case'pussyart':case'pussywankgif':case'girl_solo':case'girl_solo_gif':case'tits':case'trap':case'yuri':case'avatar2':case'anal':case'bj':case'boobs':case'classic':case'cumsluts':case'kuni':case'lesbian':case'neko':case'neko_gif':case'ahegao':case'bdsm':case'cuckold':case'cum':case'foot':case'gangbang':case'glasses':case'jahy':case'masturbation':case'nsfw_neko':case'orgy':case'panties':case'tentacles':case'thighs':case'zettai':{
 	if (!m.isGroup)return m.reply(mess.OnlyGrup)
 	if (!isNsfw && !m.key.fromMe && !isCreator) return m.reply('Fitur nsfw belum di aktifkan')
@@ -961,7 +1117,7 @@ case 'sewabot': {
 	break
 case'menu': case'help':{
             addCountCmd('#menu', m.sender, _cmd)
-            let mundur = hitungmundur(4, 22)
+            let mundur = hitungmundur(6, 1)
             var { download, upload } = await checkBandwidth();
             /*const butto = [{buttonId: '.owner',buttonText:{displayText: '👑 Owner'},type: 1},
             {buttonId: '.sewabot',buttonText:{displayText: 'Sewa 🛒'},type: 1}]
